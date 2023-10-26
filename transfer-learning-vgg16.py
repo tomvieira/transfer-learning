@@ -100,4 +100,4 @@ import tensorflow as tf
 
 from keras.models import load_model
 
-model.save('hist_model.h5')
+model.save('hist_model_vgg.keras')

@@ -39,7 +39,8 @@ folders = glob(train_path + '/*')
 # our layers - you can add more if you want
 x = Flatten()(resnet.output)
 # x = Dense(64, activation='relu')(x) # descomentei e troquei de 1000 para 64
-prediction = Dense(len(folders), activation='softmax')(x)
+#prediction = Dense(len(folders), activation='softmax')(x)
+prediction = Dense(1, activation='sigmoid')(x)
 
 # create a model object
 model = Model(inputs=resnet.input, outputs=prediction)
@@ -50,7 +51,7 @@ model = Model(inputs=resnet.input, outputs=prediction)
 # model.add(Flatten())
 # model.add(Dense(64, activation='relu'))
 # model.add(Dropout(0.4))
-# model.add(Dense(3, activation='softmax'))
+# model.add(Dense(2, activation='softmax'))
 # ate aqui
 
 
@@ -59,14 +60,14 @@ model.summary()
 
 # tell the model what cost and optimization method to use
 model.compile(
-    loss='categorical_crossentropy',
-    optimizer='adam',  # mudei maiuscula a
+    loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+    optimizer='adam',
     metrics=['accuracy']
 )
 
 
 train_datagen = ImageDataGenerator(rescale=1./255,
-                                   # shear_range = 0.2, #comentei
+                                   shear_range = 0.2, #comentei
                                    zoom_range=0.2,
                                    horizontal_flip=True)
 
@@ -77,29 +78,18 @@ training_set = train_datagen.flow_from_directory(train_path,
                                                  target_size=(400, 400),
                                                  batch_size=32,
                                                  color_mode='rgb',  # adicionei isso
-                                                 # class_mode="binary",#adicionei isso
-                                                 shuffle=True,  # adicionei isso
-                                                 seed=42,  # adicionei isso
-                                                 class_mode='categorical')
+                                                 class_mode='binary')
 
 test_set = test_datagen.flow_from_directory(valid_path,
                                             target_size=(400, 400),
                                             batch_size=32,
                                             color_mode='rgb',  # adicionei isso
-                                            # class_mode="binary",#adicionei isso
-                                            shuffle=True,  # adicionei isso
-                                            seed=42,  # adicionei isso
-                                            class_mode='categorical')
+                                            class_mode='binary')
 valid_set = valid_datagen.flow_from_directory(valid_path,
                                               target_size=(400, 400),
                                               batch_size=32,
-                                              class_mode='categorical')
+                                              class_mode='binary')
 
-'''r=model.fit_generator(training_set,
-                         samples_per_epoch = 8000,
-                         nb_epoch = 5,
-                         validation_data = test_set,
-                         nb_val_samples = 2000)'''
 
 # fit the model
 r = model.fit(
@@ -113,15 +103,15 @@ r = model.fit(
 plt.plot(r.history['loss'], label='train loss')
 plt.plot(r.history['val_loss'], label='val loss')
 plt.legend()
-plt.show()
-plt.savefig('LossVal_loss_resnet')
 
+plt.savefig('LossVal_loss_resnet')
+plt.show()
 # accuracies
 plt.plot(r.history['accuracy'], label='train acc')
 plt.plot(r.history['val_accuracy'], label='val acc')
 plt.legend()
-plt.show()
-plt.savefig('AccVal_acc_resnet')
 
+plt.savefig('AccVal_acc_resnet')
+plt.show()
 
 model.save('hist_model_resnet.h5')

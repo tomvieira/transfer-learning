@@ -35,7 +35,8 @@ folders = glob(train_path + '/*')
 # our layers - you can add more if you want
 x = Flatten()(inception.output)
 # x = Dense(1000, activation='relu')(x)
-prediction = Dense(len(folders), activation='softmax')(x)
+#prediction = Dense(len(folders), activation='softmax')(x)
+prediction = Dense(1, activation='sigmoid')(x)
 
 # create a model object
 model = Model(inputs=inception.input, outputs=prediction)
@@ -45,7 +46,7 @@ model.summary()
 
 # tell the model what cost and optimization method to use
 model.compile(
-    loss='categorical_crossentropy',
+    loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
     optimizer='adam',
     metrics=['accuracy']
 )
@@ -62,23 +63,18 @@ test_datagen = ImageDataGenerator(rescale=1./255)
 training_set = train_datagen.flow_from_directory(train_path,
                                                  target_size=(400, 400),
                                                  batch_size=32,
-                                                 class_mode='categorical')
+                                                 class_mode='binary')
 
 valid_set = valid_datagen.flow_from_directory(valid_path,
                                               target_size=(400, 400),
                                               batch_size=32,
-                                              class_mode='categorical')
+                                              class_mode='binary')
 
 test_set = test_datagen.flow_from_directory(test_path,
                                             target_size=(400, 400),
                                             batch_size=32,
-                                            class_mode='categorical')
+                                            class_mode='binary')
 
-'''r=model.fit_generator(training_set,
-                         samples_per_epoch = 8000,
-                         nb_epoch = 5,
-                         validation_data = test_set,
-                         nb_val_samples = 2000)'''
 
 # fit the model
 r = model.fit(
@@ -92,15 +88,15 @@ r = model.fit(
 plt.plot(r.history['loss'], label='train loss')
 plt.plot(r.history['val_loss'], label='val loss')
 plt.legend()
-plt.show()
-plt.savefig('LossVal_loss_inception')
 
+plt.savefig('LossVal_loss_inception')
+plt.show()
 # accuracies
 plt.plot(r.history['accuracy'], label='train acc')
 plt.plot(r.history['val_accuracy'], label='val acc')
 plt.legend()
-plt.show()
-plt.savefig('AccVal_acc_inception')
 
+plt.savefig('AccVal_acc_inception')
+plt.show()
 
 model.save('hist_model_inception.h5')
